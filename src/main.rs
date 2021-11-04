@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, io::Write};
 
 use clap::{App, Arg};
 use itertools::Itertools;
@@ -6,10 +6,11 @@ use itertools::Itertools;
 /// is_choice_1 will give a user two choices, read their input from stdin, and return
 /// true if they chose `choice1`, and false if `choice2`.
 fn is_choice_1(choice1: &str, choice2: &str) -> bool {
-    print!("{} (1) -- {} (2)?", choice1, choice2);
+    print!("{} (1) -- {} (2)?  ", choice1, choice2);
+    let _ = std::io::stdout().flush();
     let mut input = String::new();
     match std::io::stdin().read_line(&mut input) {
-        Ok(_) => match input.as_str() {
+        Ok(_) => match input.as_str().trim() {
             "1" => true,
             "2" => false,
             _ => {
@@ -39,8 +40,6 @@ fn main() {
         .about("Helps you rank choices that you have in a text file")
         .arg(
             Arg::with_name("text_file")
-                .short("-i")
-                .long("text_file")
                 .help("The path to a text file containing all options. Each option should be on a new line.")
                 .required(true)
                 .takes_value(true))
@@ -61,7 +60,7 @@ fn main() {
     // Tell the user how many comparisons they'll have to do
     let n_iterations = nchoosek(options.len(), 2);
     println!(
-        "You will have {} comparisons. Press 'control + C' if you do not wish to continue",
+        "You will have {} comparisons to do. Press 'control + C' if you do not wish to continue",
         n_iterations
     );
 
@@ -79,4 +78,10 @@ fn main() {
             }
         }
     }
+
+    println!("\n\nThe final results were");
+    results
+        .iter()
+        .sorted_by(|(_, &count1), (_, &count2)| Ord::cmp(&count2, &count1))
+        .for_each(|(&choice, &count)| println!("{} -- {}", choice, count));
 }
