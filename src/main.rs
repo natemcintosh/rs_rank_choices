@@ -65,7 +65,8 @@ fn main() {
     );
 
     // Loop over all the combinations of size 2, and ask the user to compare them
-    for (&choice1, &choice2) in options.iter().tuple_combinations() {
+    for (idx, (&choice1, &choice2)) in options.iter().tuple_combinations().enumerate() {
+        print!("{}/{}: ", idx+1, n_iterations);
         let choice = is_choice_1(choice1, choice2);
         match choice {
             true => {
