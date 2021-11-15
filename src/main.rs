@@ -6,7 +6,7 @@ use itertools::Itertools;
 /// is_choice_1 will give a user two choices, read their input from stdin, and return
 /// true if they chose `choice1`, and false if `choice2`.
 fn is_choice_1(choice1: &str, choice2: &str) -> bool {
-    print!("{} (1) -- {} (2)?  ", choice1, choice2);
+    print!("{} (1) -- {} (2)?\t", choice1, choice2);
     let _ = std::io::stdout().flush();
     let mut input = String::new();
     match std::io::stdin().read_line(&mut input) {
@@ -60,7 +60,7 @@ fn main() {
     // Tell the user how many comparisons they'll have to do
     let n_iterations = nchoosek(options.len(), 2);
     println!(
-        "You will have {} comparisons to do. Press 'control + C' if you do not wish to continue",
+        "You will have {} comparisons to do. Press 'control + C' if you do not wish to continue\n",
         n_iterations
     );
 
@@ -84,5 +84,5 @@ fn main() {
     results
         .iter()
         .sorted_by(|(_, &count1), (_, &count2)| Ord::cmp(&count2, &count1))
-        .for_each(|(&choice, &count)| println!("{} -- {}", choice, count));
+        .for_each(|(&choice, &count)| println!("{}\t: {}", choice, count));
 }
