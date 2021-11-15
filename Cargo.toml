@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 clap = "2"
 itertools = "0.10"
+xlsxwriter = "0.3"

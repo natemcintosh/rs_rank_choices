@@ -3,7 +3,7 @@ use std::{collections::HashMap, io::Write};
 use clap::{App, Arg};
 use itertools::Itertools;
 
-/// is_choice_1 will give a user two choices, read their input from stdin, and return
+/// `is_choice_1` will give a user two choices, read their input from stdin, and return
 /// true if they chose `choice1`, and false if `choice2`.
 fn is_choice_1(choice1: &str, choice2: &str) -> bool {
     print!("{} (1) -- {} (2)?\t", choice1, choice2);
@@ -33,7 +33,7 @@ fn nchoosek(n: usize, k: usize) -> usize {
     factorial(n) / (factorial(k) * factorial(n - k))
 }
 
-fn main() {
+fn main() -> Result<(), xlsxwriter::XlsxError> {
     let matches = App::new("Rank Choices")
         .version("0.1")
         .author("Nathan McIntosh")
@@ -64,20 +64,50 @@ fn main() {
         n_iterations
     );
 
+    // Create the XLSX file into which to save the data
+    let workbook = xlsxwriter::Workbook::new("ranked_options.xlsx");
+    let bold = workbook.add_format().set_bold();
+    let mut sheet1 = workbook.add_worksheet(None)?;
+
+    // Add the column titles
+    sheet1.write_string(0, 0, "Choice 1", Some(&bold))?;
+    sheet1.write_string(0, 1, "Choice 2", Some(&bold))?;
+    sheet1.write_string(0, 2, "Write 1 or 2", Some(&bold))?;
+    sheet1.set_column(0, 3, 15.0, None)?;
+    sheet1.write_string(0, 3, "Output Choice", Some(&bold))?;
+
     // Loop over all the combinations of size 2, and ask the user to compare them
     for (idx, (&choice1, &choice2)) in options.iter().tuple_combinations().enumerate() {
         print!("{}/{}: ", idx + 1, n_iterations);
         let choice = is_choice_1(choice1, choice2);
+
+        // Write the options to the file
+        sheet1.write_string((idx as u32) + 1, 0, choice1, None)?;
+        sheet1.write_string((idx as u32) + 1, 1, choice2, None)?;
+
         match choice {
             true => {
+                // Add 1 to the "Write 1 or 2" column
+                sheet1.write_number((idx as u32) + 1, 2, 1.0, None)?;
                 let counter = results.entry(choice1).or_insert(0);
                 *counter += 1;
             }
             false => {
+                // Add 2 to the "Write 1 or 2" column
+                sheet1.write_number((idx as u32) + 1, 2, 2.0, None)?;
                 let counter = results.entry(choice2).or_insert(0);
                 *counter += 1;
             }
         }
+
+        // Add the proper formula to the "Output Choice" column
+        let sheet_idx = (idx as u32) + 2;
+        sheet1.write_formula(
+            (idx as u32) + 1,
+            3,
+            format!("=CHOOSE(C{}, A{}, B{})", sheet_idx, sheet_idx, sheet_idx).as_str(),
+            None,
+        )?;
     }
 
     println!("\n\nThe final results were");
@@ -85,4 +115,9 @@ fn main() {
         .iter()
         .sorted_by(|(_, &count1), (_, &count2)| Ord::cmp(&count2, &count1))
         .for_each(|(&choice, &count)| println!("{}\t: {}", choice, count));
+
+    // Save and close
+    workbook.close()?;
+
+    Ok(())
 }
