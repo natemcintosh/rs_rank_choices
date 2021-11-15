@@ -67,13 +67,14 @@ fn main() -> Result<(), xlsxwriter::XlsxError> {
     // Create the XLSX file into which to save the data
     let workbook = xlsxwriter::Workbook::new("ranked_options.xlsx");
     let bold = workbook.add_format().set_bold();
+    let left_align = workbook.add_format().set_align(xlsxwriter::FormatAlignment::Left);
     let mut sheet1 = workbook.add_worksheet(None)?;
 
     // Add the column titles
     sheet1.write_string(0, 0, "Choice 1", Some(&bold))?;
     sheet1.write_string(0, 1, "Choice 2", Some(&bold))?;
     sheet1.write_string(0, 2, "Write 1 or 2", Some(&bold))?;
-    sheet1.set_column(0, 3, 15.0, None)?;
+    sheet1.set_column(0, 3, 15.0, Some(&left_align))?;
     sheet1.write_string(0, 3, "Output Choice", Some(&bold))?;
 
     // Loop over all the combinations of size 2, and ask the user to compare them
