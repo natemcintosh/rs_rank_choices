@@ -2,6 +2,7 @@ use std::{collections::HashMap, io::Write};
 
 use clap::{App, Arg};
 use itertools::Itertools;
+use num_bigint::BigUint;
 
 /// `is_choice_1` will give a user two choices, read their input from stdin, and return
 /// true if they chose `choice1`, and false if `choice2`.
@@ -25,11 +26,11 @@ fn is_choice_1(choice1: &str, choice2: &str) -> bool {
     }
 }
 
-fn factorial(n: usize) -> usize {
+fn factorial(n: usize) -> BigUint {
     (1..=n).product()
 }
 
-fn nchoosek(n: usize, k: usize) -> usize {
+fn nchoosek(n: usize, k: usize) -> BigUint {
     factorial(n) / (factorial(k) * factorial(n - k))
 }
 
@@ -67,7 +68,9 @@ fn main() -> Result<(), xlsxwriter::XlsxError> {
     // Create the XLSX file into which to save the data
     let workbook = xlsxwriter::Workbook::new("ranked_options.xlsx");
     let bold = workbook.add_format().set_bold();
-    let left_align = workbook.add_format().set_align(xlsxwriter::FormatAlignment::Left);
+    let left_align = workbook
+        .add_format()
+        .set_align(xlsxwriter::FormatAlignment::Left);
     let mut sheet1 = workbook.add_worksheet(None)?;
 
     // Add the column titles
